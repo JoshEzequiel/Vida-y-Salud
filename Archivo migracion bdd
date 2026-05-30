@@ -1,0 +1,131 @@
+CREATE DATABASE veterinaria_db;
+USE veterinaria_db;
+
+-- ==========================
+-- TABLA CLIENTE
+-- ==========================
+CREATE TABLE cliente (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    rut VARCHAR(20) UNIQUE NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
+    email VARCHAR(100),
+    direccion VARCHAR(200)
+);
+
+-- ==========================
+-- TABLA MASCOTA
+-- ==========================
+CREATE TABLE mascota (
+    id_mascota INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    especie VARCHAR(50) NOT NULL,
+    raza VARCHAR(100),
+    fecha_nacimiento DATE,
+    sexo ENUM('Macho','Hembra'),
+    
+    CONSTRAINT fk_mascota_cliente
+        FOREIGN KEY (id_cliente)
+        REFERENCES cliente(id_cliente)
+        ON DELETE CASCADE
+);
+
+-- ==========================
+-- TABLA VETERINARIO
+-- ==========================
+CREATE TABLE veterinario (
+    id_veterinario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    especialidad VARCHAR(100),
+    telefono VARCHAR(20),
+    email VARCHAR(100)
+);
+
+-- ==========================
+-- TABLA CITA
+-- ==========================
+CREATE TABLE cita (
+    id_cita INT AUTO_INCREMENT PRIMARY KEY,
+    id_mascota INT NOT NULL,
+    id_veterinario INT NOT NULL,
+    fecha_hora DATETIME NOT NULL,
+    estado ENUM(
+        'Pendiente',
+        'Confirmada',
+        'Atendida',
+        'Cancelada'
+    ) DEFAULT 'Pendiente',
+
+    CONSTRAINT fk_cita_mascota
+        FOREIGN KEY (id_mascota)
+        REFERENCES mascota(id_mascota),
+
+    CONSTRAINT fk_cita_veterinario
+        FOREIGN KEY (id_veterinario)
+        REFERENCES veterinario(id_veterinario)
+);
+
+-- ==========================
+-- TABLA CONSULTA
+-- ==========================
+CREATE TABLE consulta (
+    id_consulta INT AUTO_INCREMENT PRIMARY KEY,
+    id_mascota INT NOT NULL,
+    id_veterinario INT NOT NULL,
+    fecha_consulta DATETIME NOT NULL,
+    motivo TEXT,
+    diagnostico TEXT,
+    observaciones TEXT,
+
+    CONSTRAINT fk_consulta_mascota
+        FOREIGN KEY (id_mascota)
+        REFERENCES mascota(id_mascota),
+
+    CONSTRAINT fk_consulta_veterinario
+        FOREIGN KEY (id_veterinario)
+        REFERENCES veterinario(id_veterinario)
+);
+
+-- ==========================
+-- TABLA MEDICAMENTO
+-- ==========================
+CREATE TABLE medicamento (
+    id_medicamento INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    stock INT DEFAULT 0
+);
+
+-- ==========================
+-- TABLA RECETA
+-- ==========================
+CREATE TABLE receta (
+    id_receta INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta INT NOT NULL,
+    fecha_emision DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_receta_consulta
+        FOREIGN KEY (id_consulta)
+        REFERENCES consulta(id_consulta)
+);
+
+-- ==========================
+-- DETALLE RECETA
+-- ==========================
+CREATE TABLE detalle_receta (
+    id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+    id_receta INT NOT NULL,
+    id_medicamento INT NOT NULL,
+    dosis VARCHAR(100),
+    indicaciones TEXT,
+
+    CONSTRAINT fk_detalle_receta
+        FOREIGN KEY (id_receta)
+        REFERENCES receta(id_receta)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_detalle_medicamento
+        FOREIGN KEY (id_medicamento)
+        REFERENCES medicamento(id_medicamento)
+);
