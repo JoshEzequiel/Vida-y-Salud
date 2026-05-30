@@ -111,7 +111,6 @@ while True:
             afiliados[contador] = afiliado
             contador += 1
             print(" Afiliado registrado correctamente.")
-# ******* Diego Almarza ********
     elif opcion == "2":
         print("\n--- Lista de afiliados ---")
         if contador == 0:
@@ -137,8 +136,6 @@ while True:
             i += 1
         if not encontrado:
             print(" Afiliado no encontrado.")
-# ***************** Genesis Lincoqueo *******************
-#******************************************************************************************************************************************************
 elif opcion == "4":
         print("\n******* Imprimir certificado *******")
         rut_certificado = input("Ingrese el RUT del afiliado para el certificado: ")
