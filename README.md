@@ -112,7 +112,6 @@ Ejemplo:
 
 
 http://localhost:8081/actuator/health
-```
 
 Si el servicio y la conexión a MariaDB están funcionando, la respuesta mostrará:
 
