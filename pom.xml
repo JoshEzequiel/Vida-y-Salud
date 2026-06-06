@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.vidaysalud.veterinaria</groupId>
+    <artifactId>veterinaria-microservicios</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>Veterinaria Vida y Salud - Microservicios</name>
+
+    <modules>
+        <module>cliente-servicio</module>
+        <module>mascota-servicio</module>
+        <module>veterinario-servicio</module>
+        <module>cita-servicio</module>
+        <module>consulta-servicio</module>
+        <module>medicamento-servicio</module>
+        <module>receta-servicio</module>
+        <module>inventario-servicio</module>
+        <module>pago-servicio</module>
+        <module>notificacion-servicio</module>
+    </modules>
+</project>
