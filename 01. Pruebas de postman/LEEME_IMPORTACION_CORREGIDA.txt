@@ -1,0 +1,12 @@
+COLECCIONES POSTMAN CORREGIDAS
+
+1. En Postman elimina o ignora las colecciones anteriores.
+2. Importa los 10 archivos *.postman_collection.json de esta carpeta.
+3. Importa Veterinaria_Local.postman_environment.json.
+4. Selecciona el environment "Veterinaria - Local 8081 a 8090 - CORREGIDO".
+5. Abre la primera petición Health: la URL debe verse como {{base_cliente}}/actuator/health.
+6. Ejecuta primero Cliente, luego Mascota, Veterinario, Cita, Consulta, Medicamento, Receta, Inventario, Pago y Notificación.
+
+Correcciones aplicadas:
+- Las URLs ahora están guardadas en un formato reconocido por Postman.
+- Los tests de health verifican status HTTP 200 y JSON status=UP.

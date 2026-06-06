@@ -1,0 +1,825 @@
+{
+  "info": {
+    "_postman_id": "3b1387be-1088-42b0-83f6-239bee20a29f",
+    "name": "07 - Receta Servicio | Pruebas completas - CORREGIDA",
+    "description": "CRUD de receta y detalles, validaciones remotas y medicamento único por receta.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_cliente",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "base_mascota",
+      "value": "http://localhost:8082",
+      "type": "string"
+    },
+    {
+      "key": "base_veterinario",
+      "value": "http://localhost:8083",
+      "type": "string"
+    },
+    {
+      "key": "base_cita",
+      "value": "http://localhost:8084",
+      "type": "string"
+    },
+    {
+      "key": "base_consulta",
+      "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "base_medicamento",
+      "value": "http://localhost:8086",
+      "type": "string"
+    },
+    {
+      "key": "base_receta",
+      "value": "http://localhost:8087",
+      "type": "string"
+    },
+    {
+      "key": "base_inventario",
+      "value": "http://localhost:8088",
+      "type": "string"
+    },
+    {
+      "key": "base_pago",
+      "value": "http://localhost:8089",
+      "type": "string"
+    },
+    {
+      "key": "base_notificacion",
+      "value": "http://localhost:8090",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Preparación",
+      "item": [
+        {
+          "name": "Health - cliente-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_cliente}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const runId = Date.now().toString();",
+                  "pm.collectionVariables.set('runId', runId);",
+                  "const now = new Date();",
+                  "const isoLocal = d => d.toISOString().slice(0, 19);",
+                  "pm.collectionVariables.set('pastDate', isoLocal(new Date(now.getTime() - 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureDate', isoLocal(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureDate2', isoLocal(new Date(now.getTime() + 31 * 24 * 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureBirthDate', new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));",
+                  "pm.collectionVariables.set('pastBirthDate', '2022-05-10');",
+                  "console.log('Variables inicializadas para ejecución:', runId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health - mascota-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health - veterinario-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_veterinario}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health - consulta-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_consulta}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health - medicamento-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_medicamento}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health - receta-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_receta}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear cliente prerequisite (principal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_cliente}}/api/v1/clientes",
+            "description": "Crea el cliente requerido por las pruebas de integración.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rut\": \"8{{runId}}-P\",\n  \"nombre\": \"Cliente principal {{runId}}\",\n  \"telefono\": \"+56912345678\",\n  \"email\": \"cliente.principal.{{runId}}@example.com\",\n  \"direccion\": \"Puerto Montt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('clienteId', pm.response.json().data.idCliente);",
+                  "pm.test('Se guardó clienteId', () => pm.expect(pm.collectionVariables.get('clienteId')).to.exist);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear mascota prerequisite (principal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_mascota}}/api/v1/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCliente\": {{clienteId}},\n  \"nombre\": \"Luna principal\",\n  \"especie\": \"Gato\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"{{pastBirthDate}}\",\n  \"sexo\": \"Hembra\",\n  \"peso\": 4.2,\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('mascotaId', pm.response.json().data.idMascota);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear veterinario prerequisite (principal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_veterinario}}/api/v1/veterinarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Dra. Ana Soto principal\",\n  \"especialidad\": \"Medicina felina\",\n  \"telefono\": \"+56987654321\",\n  \"email\": \"vet.principal.{{runId}}@example.com\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('veterinarioId', pm.response.json().data.idVeterinario);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear consulta prerequisite (principal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_consulta}}/api/v1/consultas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idMascota\": {{mascotaId}},\n  \"idVeterinario\": {{veterinarioId}},\n  \"fechaConsulta\": \"{{pastDate}}\",\n  \"motivo\": \"Control principal\",\n  \"diagnostico\": \"Paciente estable\",\n  \"observaciones\": \"Prueba automatizada\",\n  \"pesoActual\": 4.3,\n  \"temperatura\": 38.2,\n  \"costoConsulta\": 25000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('consultaId', pm.response.json().data.idConsulta);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear medicamento prerequisite (receta uno)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Amoxicilina receta uno {{runId}}\",\n  \"descripcion\": \"Antibiótico veterinario\",\n  \"stock\": 20,\n  \"precioUnitario\": 5990,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('medicamentoId', pm.response.json().data.idMedicamento);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear medicamento prerequisite (receta dos)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Amoxicilina receta dos {{runId}}\",\n  \"descripcion\": \"Antibiótico veterinario\",\n  \"stock\": 20,\n  \"precioUnitario\": 5990,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('medicamentoId2', pm.response.json().data.idMedicamento);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 CRUD exitoso",
+      "item": [
+        {
+          "name": "Listar recetas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_receta}}/api/v1/recetas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear receta válida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_receta}}/api/v1/recetas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idConsulta\": {{consultaId}},\n  \"indicacionesGenerales\": \"Administrar con alimento\",\n  \"detalles\": [\n    {\n      \"idMedicamento\": {{medicamentoId}},\n      \"dosis\": \"1 comprimido\",\n      \"frecuencia\": \"Cada 12 horas\",\n      \"duracion\": \"7 días\",\n      \"indicaciones\": \"Completar tratamiento\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('recetaId', pm.response.json().data.idReceta);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Buscar receta por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_receta}}/api/v1/recetas/{{recetaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Actualizar receta con dos medicamentos",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_receta}}/api/v1/recetas/{{recetaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idConsulta\": {{consultaId}},\n  \"indicacionesGenerales\": \"Tratamiento actualizado\",\n  \"detalles\": [\n    {\n      \"idMedicamento\": {{medicamentoId}},\n      \"dosis\": \"1 comprimido\",\n      \"frecuencia\": \"Cada 8 horas\",\n      \"duracion\": \"5 días\",\n      \"indicaciones\": \"Con alimento\"\n    },\n    {\n      \"idMedicamento\": {{medicamentoId2}},\n      \"dosis\": \"5 ml\",\n      \"frecuencia\": \"Cada 24 horas\",\n      \"duracion\": \"3 días\",\n      \"indicaciones\": \"Agitar antes de usar\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));",
+                  "pm.test('Dos detalles',()=>pm.expect(pm.response.json().data.detalles).to.have.length(2));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Validaciones, integración y errores",
+      "item": [
+        {
+          "name": "Lista de detalles vacía",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_receta}}/api/v1/recetas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idConsulta\": {{consultaId}},\n  \"indicacionesGenerales\": \"Inválida\",\n  \"detalles\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Medicamento repetido en receta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_receta}}/api/v1/recetas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idConsulta\": {{consultaId}},\n  \"indicacionesGenerales\": \"Duplicada\",\n  \"detalles\": [\n    {\n      \"idMedicamento\": {{medicamentoId}},\n      \"dosis\": \"1\"\n    },\n    {\n      \"idMedicamento\": {{medicamentoId}},\n      \"dosis\": \"2\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 409', () => pm.expect(json.status).to.eql(409));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Medicamento remoto inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_receta}}/api/v1/recetas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idConsulta\": {{consultaId}},\n  \"indicacionesGenerales\": \"Inválida\",\n  \"detalles\": [\n    {\n      \"idMedicamento\": 999999999,\n      \"dosis\": \"1 comprimido\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Consulta remota inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_receta}}/api/v1/recetas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idConsulta\": 999999999,\n  \"indicacionesGenerales\": \"Inválida\",\n  \"detalles\": [\n    {\n      \"idMedicamento\": {{medicamentoId}},\n      \"dosis\": \"1 comprimido\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Receta inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_receta}}/api/v1/recetas/999999999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 404', () => pm.expect(json.status).to.eql(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Eliminación",
+      "item": [
+        {
+          "name": "Eliminar receta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_receta}}/api/v1/recetas/{{recetaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Comprobar receta eliminada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_receta}}/api/v1/recetas/{{recetaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 404', () => pm.expect(json.status).to.eql(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}

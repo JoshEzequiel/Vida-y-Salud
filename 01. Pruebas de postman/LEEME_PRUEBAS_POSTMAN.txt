@@ -1,0 +1,33 @@
+PAQUETE DE PRUEBAS POSTMAN - VETERINARIA VIDA Y SALUD
+========================================================
+
+CONTENIDO
+- 10 colecciones, una por microservicio.
+- Cada colección incluye health check, casos exitosos, validaciones, errores 404/409/400 y reglas de negocio.
+- Las colecciones guardan dinámicamente los IDs creados; no dependen de que el ID sea 1.
+- Un ambiente opcional con las URLs de los puertos 8081 a 8090.
+
+ANTES DE EJECUTAR
+1. Enciende Laragon/MariaDB.
+2. Ejecuta el script 01_schema_completo_desde_cero.sql.
+3. Inicia los microservicios necesarios.
+4. Importa los archivos JSON en Postman.
+5. Ejecuta siempre las carpetas en orden, comenzando por "00 Preparación".
+
+IMPORTANTE
+- Cada colección genera datos únicos usando la variable runId.
+- Para ejecutar una colección completa, usa Run collection y respeta el orden.
+- Si ejecutas solicitudes manualmente, primero ejecuta el Health inicial de "00 Preparación"; este inicializa runId y las fechas.
+- Los servicios que dependen de otros requieren que esos servicios también estén encendidos.
+
+DEPENDENCIAS POR COLECCIÓN
+02 Mascota: cliente + mascota.
+04 Cita: cliente + mascota + veterinario + cita.
+05 Consulta: cliente + mascota + veterinario + cita + consulta.
+07 Receta: cliente + mascota + veterinario + consulta + medicamento + receta.
+08 Inventario: medicamento + inventario.
+09 Pago: cliente + mascota + veterinario + consulta + pago.
+10 Notificación: cliente + notificación.
+
+NOTA DE INVENTARIO
+Inventario no tiene PUT ni DELETE en la API porque sus movimientos son tratados como un historial inmutable de auditoría. La colección prueba entradas, salidas, ajustes, stock insuficiente e integración con medicamento-servicio.
