@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.citaservicio.dto;import com.vidaysalud.veterinaria.citaservicio.model.EstadoCita;import jakarta.validation.constraints.NotNull;import lombok.*;@Getter @Setter @NoArgsConstructor @AllArgsConstructor public class EstadoCitaRequestDTO{@NotNull private EstadoCita estado;}

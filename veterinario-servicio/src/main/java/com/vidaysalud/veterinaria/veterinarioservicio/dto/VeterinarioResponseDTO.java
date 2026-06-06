@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.veterinarioservicio.dto; import lombok.*; @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class VeterinarioResponseDTO{private Integer idVeterinario;private String nombre;private String especialidad;private String telefono;private String email;private Boolean activo;}

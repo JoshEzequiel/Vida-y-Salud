@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.citaservicio.model;public enum EstadoCita{Pendiente,Confirmada,Atendida,Cancelada}
