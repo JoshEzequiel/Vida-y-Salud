@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.pagoservicio.dto;import com.vidaysalud.veterinaria.pagoservicio.model.EstadoPago;import jakarta.validation.constraints.NotNull;import lombok.*;@Getter @Setter @NoArgsConstructor @AllArgsConstructor public class EstadoPagoRequestDTO{@NotNull private EstadoPago estado;}

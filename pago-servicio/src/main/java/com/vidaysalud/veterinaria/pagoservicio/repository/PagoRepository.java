@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.pagoservicio.repository;import com.vidaysalud.veterinaria.pagoservicio.model.Pago;import org.springframework.data.jpa.repository.JpaRepository;import java.util.Optional;public interface PagoRepository extends JpaRepository<Pago,Integer>{Optional<Pago>findByIdConsulta(Integer idConsulta);}

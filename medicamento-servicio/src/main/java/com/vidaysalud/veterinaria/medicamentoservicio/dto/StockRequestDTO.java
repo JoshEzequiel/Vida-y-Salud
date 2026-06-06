@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.medicamentoservicio.dto;import jakarta.validation.constraints.*;import lombok.*;@Getter @Setter @NoArgsConstructor @AllArgsConstructor public class StockRequestDTO{@NotNull private Integer stock;}

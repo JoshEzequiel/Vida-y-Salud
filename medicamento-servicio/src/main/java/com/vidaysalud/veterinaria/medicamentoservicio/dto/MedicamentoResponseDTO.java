@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.medicamentoservicio.dto;import lombok.*;import java.math.BigDecimal;@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class MedicamentoResponseDTO{private Integer idMedicamento;private String nombre;private String descripcion;private Integer stock;private BigDecimal precioUnitario;private Boolean activo;}
