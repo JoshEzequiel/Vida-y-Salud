@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.notificacionservicio.model;public enum TipoNotificacion{EMAIL,SMS,PUSH}

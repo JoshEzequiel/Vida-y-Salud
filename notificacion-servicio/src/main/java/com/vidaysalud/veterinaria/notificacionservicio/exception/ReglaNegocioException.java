@@ -1,0 +1,4 @@
+package com.vidaysalud.veterinaria.notificacionservicio.exception;
+public class ReglaNegocioException extends RuntimeException {
+    public ReglaNegocioException(String mensaje) { super(mensaje); }
+}
