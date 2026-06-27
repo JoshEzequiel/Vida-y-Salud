@@ -1,0 +1,75 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: cliente-servicio
+              uri: ${CLIENTE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/clientes,/api/v1/clientes/**
+
+            - id: mascota-servicio
+              uri: ${MASCOTA_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/mascotas,/api/v1/mascotas/**
+
+            - id: veterinario-servicio
+              uri: ${VETERINARIO_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/veterinarios,/api/v1/veterinarios/**
+
+            - id: cita-servicio
+              uri: ${CITA_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/citas,/api/v1/citas/**
+
+            - id: consulta-servicio
+              uri: ${CONSULTA_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/consultas,/api/v1/consultas/**
+
+            - id: medicamento-servicio
+              uri: ${MEDICAMENTO_URL:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/medicamentos,/api/v1/medicamentos/**
+
+            - id: receta-servicio
+              uri: ${RECETA_URL:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/recetas,/api/v1/recetas/**
+
+            - id: inventario-servicio
+              uri: ${INVENTARIO_URL:http://localhost:8088}
+              predicates:
+                - Path=/api/v1/inventario,/api/v1/inventario/**
+
+            - id: pago-servicio
+              uri: ${PAGO_URL:http://localhost:8089}
+              predicates:
+                - Path=/api/v1/pagos,/api/v1/pagos/**
+
+            - id: notificacion-servicio
+              uri: ${NOTIFICACION_URL:http://localhost:8090}
+              predicates:
+                - Path=/api/v1/notificaciones,/api/v1/notificaciones/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: INFO
