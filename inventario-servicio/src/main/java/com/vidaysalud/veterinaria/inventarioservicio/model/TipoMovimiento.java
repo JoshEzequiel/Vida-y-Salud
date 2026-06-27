@@ -1,0 +1,3 @@
+package com.vidaysalud.veterinaria.inventarioservicio.model;
+
+public enum TipoMovimiento {ENTRADA, SALIDA, AJUSTE}

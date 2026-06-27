@@ -1,0 +1,469 @@
+{
+  "info": {
+    "_postman_id": "0346d0aa-72e6-4f4a-bce0-a3b0bbb3d834",
+    "name": "06 - Medicamento Servicio | Pruebas completas - CORREGIDA",
+    "description": "CRUD, actualización parcial de stock, validaciones y duplicados.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_cliente",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "base_mascota",
+      "value": "http://localhost:8082",
+      "type": "string"
+    },
+    {
+      "key": "base_veterinario",
+      "value": "http://localhost:8083",
+      "type": "string"
+    },
+    {
+      "key": "base_cita",
+      "value": "http://localhost:8084",
+      "type": "string"
+    },
+    {
+      "key": "base_consulta",
+      "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "base_medicamento",
+      "value": "http://localhost:8086",
+      "type": "string"
+    },
+    {
+      "key": "base_receta",
+      "value": "http://localhost:8087",
+      "type": "string"
+    },
+    {
+      "key": "base_inventario",
+      "value": "http://localhost:8088",
+      "type": "string"
+    },
+    {
+      "key": "base_pago",
+      "value": "http://localhost:8089",
+      "type": "string"
+    },
+    {
+      "key": "base_notificacion",
+      "value": "http://localhost:8090",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Preparación",
+      "item": [
+        {
+          "name": "Health - medicamento-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_medicamento}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const runId = Date.now().toString();",
+                  "pm.collectionVariables.set('runId', runId);",
+                  "const now = new Date();",
+                  "const isoLocal = d => d.toISOString().slice(0, 19);",
+                  "pm.collectionVariables.set('pastDate', isoLocal(new Date(now.getTime() - 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureDate', isoLocal(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureDate2', isoLocal(new Date(now.getTime() + 31 * 24 * 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureBirthDate', new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));",
+                  "pm.collectionVariables.set('pastBirthDate', '2022-05-10');",
+                  "console.log('Variables inicializadas para ejecución:', runId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 CRUD exitoso",
+      "item": [
+        {
+          "name": "Listar medicamentos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_medicamento}}/api/v1/medicamentos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear medicamento válido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Amoxicilina {{runId}}\",\n  \"descripcion\": \"Antibiótico veterinario\",\n  \"stock\": 20,\n  \"precioUnitario\": 5990,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('medicamentoId', pm.response.json().data.idMedicamento);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Buscar medicamento por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/{{medicamentoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Actualizar medicamento",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/{{medicamentoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Amoxicilina actualizada {{runId}}\",\n  \"descripcion\": \"Antibiótico actualizado\",\n  \"stock\": 25,\n  \"precioUnitario\": 6490,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Actualizar stock",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/{{medicamentoId}}/stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));",
+                  "pm.test('Stock = 30',()=>pm.expect(pm.response.json().data.stock).to.eql(30));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Validaciones y errores",
+      "item": [
+        {
+          "name": "Datos inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"descripcion\": \"Inválido\",\n  \"stock\": -1,\n  \"precioUnitario\": -10,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Medicamento duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Amoxicilina actualizada {{runId}}\",\n  \"descripcion\": \"Duplicado\",\n  \"stock\": 1,\n  \"precioUnitario\": 100,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 409', () => pm.expect(json.status).to.eql(409));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Stock negativo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/{{medicamentoId}}/stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": -5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Medicamento inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/999999999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 404', () => pm.expect(json.status).to.eql(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Eliminación",
+      "item": [
+        {
+          "name": "Eliminar medicamento",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/{{medicamentoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Comprobar medicamento eliminado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_medicamento}}/api/v1/medicamentos/{{medicamentoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 404', () => pm.expect(json.status).to.eql(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}

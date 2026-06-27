@@ -1,0 +1,482 @@
+{
+  "info": {
+    "_postman_id": "acb95c60-ff06-4118-8f94-5709de4472ab",
+    "name": "02 - Mascota Servicio | Pruebas completas - CORREGIDA",
+    "description": "CRUD, validación del dueño mediante WebClient, errores y eliminación.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_cliente",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "base_mascota",
+      "value": "http://localhost:8082",
+      "type": "string"
+    },
+    {
+      "key": "base_veterinario",
+      "value": "http://localhost:8083",
+      "type": "string"
+    },
+    {
+      "key": "base_cita",
+      "value": "http://localhost:8084",
+      "type": "string"
+    },
+    {
+      "key": "base_consulta",
+      "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "base_medicamento",
+      "value": "http://localhost:8086",
+      "type": "string"
+    },
+    {
+      "key": "base_receta",
+      "value": "http://localhost:8087",
+      "type": "string"
+    },
+    {
+      "key": "base_inventario",
+      "value": "http://localhost:8088",
+      "type": "string"
+    },
+    {
+      "key": "base_pago",
+      "value": "http://localhost:8089",
+      "type": "string"
+    },
+    {
+      "key": "base_notificacion",
+      "value": "http://localhost:8090",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Preparación",
+      "item": [
+        {
+          "name": "Health - cliente-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_cliente}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const runId = Date.now().toString();",
+                  "pm.collectionVariables.set('runId', runId);",
+                  "const now = new Date();",
+                  "const isoLocal = d => d.toISOString().slice(0, 19);",
+                  "pm.collectionVariables.set('pastDate', isoLocal(new Date(now.getTime() - 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureDate', isoLocal(new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureDate2', isoLocal(new Date(now.getTime() + 31 * 24 * 60 * 60 * 1000)));",
+                  "pm.collectionVariables.set('futureBirthDate', new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));",
+                  "pm.collectionVariables.set('pastBirthDate', '2022-05-10');",
+                  "console.log('Variables inicializadas para ejecución:', runId);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health - mascota-servicio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/actuator/health",
+            "description": "Comprueba que el microservicio y su conexión a la base de datos estén activos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Servicio UP', () => pm.expect(json.status).to.eql('UP'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear cliente prerequisite (principal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_cliente}}/api/v1/clientes",
+            "description": "Crea el cliente requerido por las pruebas de integración.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rut\": \"8{{runId}}-P\",\n  \"nombre\": \"Cliente principal {{runId}}\",\n  \"telefono\": \"+56912345678\",\n  \"email\": \"cliente.principal.{{runId}}@example.com\",\n  \"direccion\": \"Puerto Montt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('clienteId', pm.response.json().data.idCliente);",
+                  "pm.test('Se guardó clienteId', () => pm.expect(pm.collectionVariables.get('clienteId')).to.exist);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 CRUD exitoso",
+      "item": [
+        {
+          "name": "Listar mascotas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/api/v1/mascotas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Crear mascota válida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_mascota}}/api/v1/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCliente\": {{clienteId}},\n  \"nombre\": \"Luna\",\n  \"especie\": \"Gato\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"{{pastBirthDate}}\",\n  \"sexo\": \"Hembra\",\n  \"peso\": 4.2,\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 201', () => pm.expect(json.status).to.eql(201));",
+                  "pm.collectionVariables.set('mascotaId', pm.response.json().data.idMascota);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Buscar mascota por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/api/v1/mascotas/{{mascotaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Listar mascotas por cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/api/v1/mascotas/cliente/{{clienteId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));",
+                  "pm.test('Lista contiene mascotas',()=>pm.expect(pm.response.json().data).to.be.an('array').that.is.not.empty);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Actualizar mascota",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_mascota}}/api/v1/mascotas/{{mascotaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCliente\": {{clienteId}},\n  \"nombre\": \"Luna Actualizada\",\n  \"especie\": \"Gato\",\n  \"raza\": \"Mestiza\",\n  \"fechaNacimiento\": \"{{pastBirthDate}}\",\n  \"sexo\": \"Hembra\",\n  \"peso\": 4.7,\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Validaciones, integración y errores",
+      "item": [
+        {
+          "name": "Datos inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_mascota}}/api/v1/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCliente\": null,\n  \"nombre\": \"\",\n  \"especie\": \"\",\n  \"fechaNacimiento\": \"{{futureBirthDate}}\",\n  \"sexo\": null,\n  \"peso\": -1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Cliente remoto inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_mascota}}/api/v1/mascotas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCliente\": 999999999,\n  \"nombre\": \"Sin dueño\",\n  \"especie\": \"Perro\",\n  \"raza\": \"Mestizo\",\n  \"fechaNacimiento\": \"{{pastBirthDate}}\",\n  \"sexo\": \"Macho\",\n  \"peso\": 10,\n  \"activa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 400', () => pm.expect(json.status).to.eql(400));",
+                  "pm.test('Mensaje indica cliente inexistente',()=>pm.expect(pm.response.json().mensaje.toLowerCase()).to.include('cliente'));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Mascota inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/api/v1/mascotas/999999999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 404', () => pm.expect(json.status).to.eql(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Eliminación",
+      "item": [
+        {
+          "name": "Eliminar mascota",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_mascota}}/api/v1/mascotas/{{mascotaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 200', () => pm.expect(json.status).to.eql(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Comprobar mascota eliminada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_mascota}}/api/v1/mascotas/{{mascotaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Respuesta JSON', () => pm.response.to.be.json);",
+                  "const json = pm.response.json();",
+                  "pm.test('Campo status = 404', () => pm.expect(json.status).to.eql(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}

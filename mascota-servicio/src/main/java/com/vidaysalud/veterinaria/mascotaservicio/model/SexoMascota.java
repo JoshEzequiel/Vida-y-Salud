@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.mascotaservicio.model; public enum SexoMascota { Macho, Hembra }

@@ -1,0 +1,1 @@
+package com.vidaysalud.veterinaria.recetaservicio.dto;import lombok.*;@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class DetalleRecetaResponseDTO{private Integer idDetalle;private Integer idMedicamento;private String dosis;private String frecuencia;private String duracion;private String indicaciones;}

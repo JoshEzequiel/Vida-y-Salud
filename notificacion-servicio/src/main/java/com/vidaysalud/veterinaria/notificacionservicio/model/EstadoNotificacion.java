@@ -1,0 +1,3 @@
+package com.vidaysalud.veterinaria.notificacionservicio.model;
+
+public enum EstadoNotificacion {PENDIENTE, ENVIADA, FALLIDA}

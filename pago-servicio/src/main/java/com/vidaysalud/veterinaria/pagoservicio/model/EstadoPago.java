@@ -1,0 +1,3 @@
+package com.vidaysalud.veterinaria.pagoservicio.model;
+
+public enum EstadoPago {PENDIENTE, PAGADO, ANULADO}

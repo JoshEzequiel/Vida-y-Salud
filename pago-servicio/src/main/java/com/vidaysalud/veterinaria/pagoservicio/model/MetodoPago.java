@@ -1,0 +1,3 @@
+package com.vidaysalud.veterinaria.pagoservicio.model;
+
+public enum MetodoPago {EFECTIVO, TARJETA, TRANSFERENCIA}

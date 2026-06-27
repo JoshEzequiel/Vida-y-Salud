@@ -1,0 +1,194 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: veterinaria-mariadb
+    restart: always
+    environment:
+      MARIADB_DATABASE: veterinaria_db
+      MARIADB_ROOT_PASSWORD: root123
+    ports:
+      - "3307:3306"
+    volumes:
+      - veterinaria_data:/var/lib/mysql
+      - ./docker/init:/docker-entrypoint-initdb.d
+
+  cliente-servicio:
+    build:
+      context: ./cliente-servicio
+    container_name: cliente-servicio
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+    ports:
+      - "8081:8081"
+
+  mascota-servicio:
+    build:
+      context: ./mascota-servicio
+    container_name: mascota-servicio
+    restart: always
+    depends_on:
+      - mariadb
+      - cliente-servicio
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      CLIENTE_URL: http://cliente-servicio:8081/api/v1/clientes
+    ports:
+      - "8082:8082"
+
+  veterinario-servicio:
+    build:
+      context: ./veterinario-servicio
+    container_name: veterinario-servicio
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+    ports:
+      - "8083:8083"
+  cita-servicio:
+    build:
+      context: ./cita-servicio
+    container_name: cita-servicio
+    restart: always
+    depends_on:
+      - mariadb
+      - mascota-servicio
+      - veterinario-servicio
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      MASCOTA_URL: http://mascota-servicio:8082/api/v1/mascotas
+      VETERINARIO_URL: http://veterinario-servicio:8083/api/v1/veterinarios
+    ports:
+      - "8084:8084"
+  consulta-servicio:
+    build:
+      context: ./consulta-servicio
+    container_name: consulta-servicio
+    restart: always
+    depends_on:
+      - mariadb
+      - cita-servicio
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      CITA_URL: http://cita-servicio:8084/api/v1/citas
+    ports:
+      - "8085:8085"
+  medicamento-servicio:
+    build:
+      context: ./medicamento-servicio
+    container_name: medicamento-servicio
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+    ports:
+      - "8086:8086"
+  receta-servicio:
+    build:
+      context: ./receta-servicio
+    container_name: receta-servicio
+    restart: always
+    depends_on:
+      - mariadb
+      - consulta-servicio
+      - medicamento-servicio
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      CONSULTA_URL: http://consulta-servicio:8085/api/v1/consultas
+      MEDICAMENTO_URL: http://medicamento-servicio:8086/api/v1/medicamentos
+    ports:
+      - "8087:8087"
+  inventario-servicio:
+    build:
+      context: ./inventario-servicio
+    container_name: inventario-servicio
+    restart: always
+    depends_on:
+      - mariadb
+      - medicamento-servicio
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      MEDICAMENTO_URL: http://medicamento-servicio:8086/api/v1/medicamentos
+    ports:
+      - "8088:8088"
+  pago-servicio:
+    build:
+      context: ./pago-servicio
+    container_name: pago-servicio
+    restart: always
+    depends_on:
+      - mariadb
+      - consulta-servicio
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+      CONSULTA_URL: http://consulta-servicio:8085/api/v1/consultas
+    ports:
+      - "8089:8089"
+  notificacion-servicio:
+    build:
+      context: ./notificacion-servicio
+    container_name: notificacion-servicio
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+      DB_USER: root
+      DB_PASSWORD: root123
+    ports:
+      - "8090:8090"
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    restart: always
+    depends_on:
+      - cliente-servicio
+      - mascota-servicio
+      - veterinario-servicio
+      - cita-servicio
+      - consulta-servicio
+      - medicamento-servicio
+      - receta-servicio
+      - inventario-servicio
+      - pago-servicio
+      - notificacion-servicio
+    environment:
+      CLIENTE_URL: http://cliente-servicio:8081
+      MASCOTA_URL: http://mascota-servicio:8082
+      VETERINARIO_URL: http://veterinario-servicio:8083
+      CITA_URL: http://cita-servicio:8084
+      CONSULTA_URL: http://consulta-servicio:8085
+      MEDICAMENTO_URL: http://medicamento-servicio:8086
+      RECETA_URL: http://receta-servicio:8087
+      INVENTARIO_URL: http://inventario-servicio:8088
+      PAGO_URL: http://pago-servicio:8089
+      NOTIFICACION_URL: http://notificacion-servicio:8090
+    ports:
+      - "8080:8080"
+
+volumes:
+  veterinaria_data:
