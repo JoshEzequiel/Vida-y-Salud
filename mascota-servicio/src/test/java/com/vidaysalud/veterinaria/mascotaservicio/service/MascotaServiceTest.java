@@ -42,7 +42,7 @@ class MascotaServiceTest {
     }
 
     @Test
-    void listarMascotas_ok() {
+    void crearMascota_conDataFaker_debeGuardarCorrectamente() {
         // Given
         Mascota mascota = mascotaBase();
 

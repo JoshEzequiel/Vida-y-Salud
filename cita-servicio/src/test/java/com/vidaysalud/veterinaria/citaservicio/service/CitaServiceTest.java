@@ -123,7 +123,7 @@ class CitaServiceTest {
     }
 
     @Test
-    void crearCita_ok() {
+    void crearCita_conDataFaker_debeGuardarCorrectamente() {
         // Given
         CitaRequestDTO request = requestBase();
 
@@ -349,8 +349,14 @@ class CitaServiceTest {
         request.setIdVeterinario(1);
         request.setFechaHora(LocalDateTime.now().plusDays(2));
         request.setEstado(null);
-        request.setMotivo("Control general generado por prueba");
-        request.setObservaciones("Observación de prueba");
+        request.setMotivo(faker.options().option(
+                "Control general",
+                "Vacunacion",
+                "Revision de rutina",
+                "Consulta por malestar",
+                "Control post tratamiento"
+        ));
+        request.setObservaciones(faker.lorem().sentence());
         return request;
     }
 

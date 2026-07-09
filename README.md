@@ -72,29 +72,29 @@ Además, se utiliza un **API Gateway** para centralizar el acceso a los endpoint
 
 ## Base de datos
 
-El sistema utiliza una base de datos **MariaDB** llamada:
+El sistema utiliza **MariaDB** como motor de base de datos. Para separar ambientes se definieron dos bases:
 
 ```text
-veterinaria_db
+veterinaria_db       -> ambiente dev
+veterinaria_db_test  -> ambiente test
 ```
 
-En Docker, MariaDB se ejecuta como un contenedor independiente.
-
-Datos de conexión para Docker:
+En Docker, MariaDB se ejecuta como un contenedor independiente. Desde el equipo local se accede por:
 
 ```text
 Host: localhost
 Puerto: 3307
 Usuario: root
 Contraseña: root123
-Base de datos: veterinaria_db
 ```
 
-Dentro de la red Docker, los microservicios se conectan a la base usando:
+Dentro de la red Docker, los microservicios no usan `localhost`, sino el nombre del contenedor:
 
 ```text
 mariadb:3306
 ```
+
+Esta separación permite ejecutar pruebas sin afectar la base usada en desarrollo.
 
 ---
 
@@ -126,29 +126,47 @@ Cada microservicio contiene su propio `Dockerfile`, lo que permite construirlo c
 
 ---
 
-## Configuración con YAML
+## Configuración YAML, perfiles y Docker
 
-Los microservicios utilizan archivos `application.yml` para configurar:
+Cada microservicio utiliza tres archivos de configuración:
 
-* Nombre del servicio
-* Puerto de ejecución
-* Conexión a base de datos
-* Rutas hacia otros microservicios
-* Actuator
-* Variables de entorno para Docker
+```text
+application.yml
+application-dev.yml
+application-test.yml
+```
 
-Ejemplo de configuración de base de datos:
+El archivo `application.yml` define el perfil activo por defecto:
 
 ```yaml
 spring:
-  datasource:
-    url: ${DB_URL:jdbc:mariadb://localhost:3306/veterinaria_db}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
-    driver-class-name: org.mariadb.jdbc.Driver
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 ```
 
-Esto permite ejecutar el proyecto tanto localmente como dentro de Docker sin modificar el código fuente.
+El perfil `dev` se usa para ejecutar el sistema en desarrollo y Docker, conectando a la base principal `veterinaria_db`. El perfil `test` se usa para pruebas y conecta a `veterinaria_db_test`.
+
+En `docker-compose.yml`, cada microservicio recibe variables de entorno como:
+
+```yaml
+environment:
+  SPRING_PROFILES_ACTIVE: dev
+  DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
+  DB_USER: root
+  DB_PASSWORD: root123
+```
+
+Dentro de Docker, las comunicaciones internas se realizan usando el nombre del servicio, por ejemplo:
+
+```text
+mariadb:3306
+cliente-servicio:8081
+mascota-servicio:8082
+api-gateway:8080
+```
+
+Con esta configuración, el ecosistema puede levantarse completo mediante Docker Compose sin modificar el código fuente.
+
 
 ---
 
@@ -284,68 +302,89 @@ http://localhost:8084/actuator/health
 
 ---
 
-## Swagger / OpenAPI
+## Pruebas en Postman mediante API Gateway
 
-Cada microservicio cuenta con documentación Swagger para revisar sus endpoints.
+Las pruebas REST también se realizaron desde Postman usando el API Gateway como punto único de entrada. Todas las rutas usan el puerto `8080`.
 
-URLs principales:
+| Microservicio | Método | Ruta Gateway |
+| --- | --- | --- |
+| cliente-servicio | GET | `http://localhost:8080/api/v1/clientes` |
+| mascota-servicio | GET | `http://localhost:8080/api/v1/mascotas` |
+| veterinario-servicio | GET | `http://localhost:8080/api/v1/veterinarios` |
+| cita-servicio | GET | `http://localhost:8080/api/v1/citas` |
+| consulta-servicio | GET | `http://localhost:8080/api/v1/consultas` |
+| medicamento-servicio | GET | `http://localhost:8080/api/v1/medicamentos` |
+| receta-servicio | GET | `http://localhost:8080/api/v1/recetas` |
+| inventario-servicio | GET | `http://localhost:8080/api/v1/inventario` |
+| pago-servicio | GET | `http://localhost:8080/api/v1/pagos` |
+| notificacion-servicio | GET | `http://localhost:8080/api/v1/notificaciones` |
 
-```text
-http://localhost:8081/swagger-ui/index.html
-http://localhost:8082/swagger-ui/index.html
-http://localhost:8083/swagger-ui/index.html
-http://localhost:8084/swagger-ui/index.html
-http://localhost:8085/swagger-ui/index.html
-http://localhost:8086/swagger-ui/index.html
-http://localhost:8087/swagger-ui/index.html
-http://localhost:8088/swagger-ui/index.html
-http://localhost:8089/swagger-ui/index.html
-http://localhost:8090/swagger-ui/index.html
-```
-
-Swagger permite visualizar:
-
-* Endpoints disponibles
-* Métodos HTTP
-* Parámetros de entrada
-* Respuestas esperadas
-* Códigos de estado
-* Estructura JSON de las solicitudes y respuestas
+Se dejó evidencia en la carpeta `evidencias/postman`, validando respuestas HTTP `200 OK` y datos en formato JSON.
 
 ---
 
-## Pruebas unitarias
+## Swagger / OpenAPI
 
-El proyecto incluye pruebas unitarias con:
+Cada microservicio cuenta con documentación Swagger/OpenAPI para visualizar y probar endpoints, modelos, parámetros, cuerpos JSON y códigos de respuesta.
 
-* JUnit 5
-* Mockito
-* Data Faker
-* JaCoCo
+| Microservicio | Swagger |
+| --- | --- |
+| cliente-servicio | `http://localhost:8081/swagger-ui/index.html` |
+| mascota-servicio | `http://localhost:8082/swagger-ui/index.html` |
+| veterinario-servicio | `http://localhost:8083/swagger-ui/index.html` |
+| cita-servicio | `http://localhost:8084/swagger-ui/index.html` |
+| consulta-servicio | `http://localhost:8085/swagger-ui/index.html` |
+| medicamento-servicio | `http://localhost:8086/swagger-ui/index.html` |
+| receta-servicio | `http://localhost:8087/swagger-ui/index.html` |
+| inventario-servicio | `http://localhost:8088/swagger-ui/index.html` |
+| pago-servicio | `http://localhost:8089/swagger-ui/index.html` |
+| notificacion-servicio | `http://localhost:8090/swagger-ui/index.html` |
 
-Las pruebas se encuentran en:
+Se dejó evidencia en la carpeta `evidencias/swagger`, ejecutando endpoints `GET` desde Swagger y validando respuesta HTTP `200 OK` con formato JSON.
+
+
+---
+
+## Pruebas unitarias y perfiles de test
+
+El proyecto incluye pruebas unitarias con **JUnit 5**, **Mockito** y **DataFaker** en `src/test/java`.
+
+Se implementó separación de ambientes mediante perfiles:
 
 ```text
-src/test/java
+dev  -> veterinaria_db
+test -> veterinaria_db_test
 ```
 
-Se probaron servicios y reglas de negocio relevantes, simulando repositorios y dependencias externas mediante mocks.
+Las clases `PerfilTest` cargan Spring con `@ActiveProfiles("test")` y validan que la conexión apunte a `veterinaria_db_test`. Las clases `ServiceTest` prueban reglas de negocio usando mocks, asserts y datos simulados generados con DataFaker.
 
-Ejemplos de pruebas implementadas:
+| Microservicio | Prueba de perfil | Prueba de servicio |
+| --- | --- | --- |
+| cliente-servicio | ClientePerfilTest | ClienteServiceTest |
+| mascota-servicio | MascotaPerfilTest | MascotaServiceTest |
+| veterinario-servicio | VeterinarioPerfilTest | VeterinarioServiceTest |
+| cita-servicio | CitaPerfilTest | CitaServiceTest |
+| consulta-servicio | ConsultaPerfilTest | ConsultaServiceTest |
+| medicamento-servicio | MedicamentoPerfilTest | MedicamentoServiceTest |
+| receta-servicio | RecetaPerfilTest | RecetaServiceTest |
+| inventario-servicio | InventarioPerfilTest | InventarioServiceTest |
+| pago-servicio | PagoPerfilTest | PagoServiceTest |
+| notificacion-servicio | NotificacionPerfilTest | NotificacionServiceTest |
 
-| Servicio         | Clase de prueba    | Descripción                                     |
-| ---------------- | ------------------ | ----------------------------------------------- |
-| cliente-servicio | ClienteServiceTest | Validación de creación, duplicidad y búsqueda   |
-| mascota-servicio | MascotaServiceTest | Validación de mascotas y cliente asociado       |
-| cita-servicio    | CitaServiceTest    | Validación de citas, horarios, fechas y estados |
+Las pruebas unitarias de servicio usan Mockito para simular repositorios y clientes remotos, por lo que no modifican datos reales. La base `veterinaria_db_test` se usa para validar configuración y pruebas que cargan el contexto Spring con perfil `test`.
 
-Para ejecutar las pruebas de un microservicio:
+Para ejecutar pruebas desde IntelliJ se puede usar el botón de ejecución de cada clase. También se pueden ejecutar con Maven desde cada microservicio:
 
 ```powershell
 mvn test
 ```
 
-También se puede ejecutar desde IntelliJ usando el panel de Maven o el botón de ejecución de la clase de prueba.
+Si el comando `mvn` no está disponible en Windows, se pueden ejecutar directamente desde IntelliJ o usando el Maven Wrapper del proyecto, si existe:
+
+```powershell
+.\mvnw.cmd test
+```
+
 
 ---
 
@@ -521,21 +560,22 @@ SHOW TABLES;
 
 ## Variables de entorno usadas en Docker
 
-| Variable         | Uso                                  |
-| ---------------- | ------------------------------------ |
-| DB_URL           | URL de conexión a MariaDB            |
-| DB_USER          | Usuario de base de datos             |
-| DB_PASSWORD      | Contraseña de base de datos          |
-| CLIENTE_URL      | URL interna de cliente-servicio      |
-| MASCOTA_URL      | URL interna de mascota-servicio      |
-| VETERINARIO_URL  | URL interna de veterinario-servicio  |
-| CITA_URL         | URL interna de cita-servicio         |
-| CONSULTA_URL     | URL interna de consulta-servicio     |
-| MEDICAMENTO_URL  | URL interna de medicamento-servicio  |
-| RECETA_URL       | URL interna de receta-servicio       |
-| INVENTARIO_URL   | URL interna de inventario-servicio   |
-| PAGO_URL         | URL interna de pago-servicio         |
-| NOTIFICACION_URL | URL interna de notificacion-servicio |
+| Variable               | Uso                                  |
+| ---------------------- | ------------------------------------ |
+| SPRING_PROFILES_ACTIVE | Perfil activo del microservicio      |
+| DB_URL                 | URL de conexión a MariaDB            |
+| DB_USER                | Usuario de base de datos             |
+| DB_PASSWORD            | Contraseña de base de datos          |
+| CLIENTE_URL            | URL interna de cliente-servicio      |
+| MASCOTA_URL            | URL interna de mascota-servicio      |
+| VETERINARIO_URL        | URL interna de veterinario-servicio  |
+| CITA_URL               | URL interna de cita-servicio         |
+| CONSULTA_URL           | URL interna de consulta-servicio     |
+| MEDICAMENTO_URL        | URL interna de medicamento-servicio  |
+| RECETA_URL             | URL interna de receta-servicio       |
+| INVENTARIO_URL         | URL interna de inventario-servicio   |
+| PAGO_URL               | URL interna de pago-servicio         |
+| NOTIFICACION_URL       | URL interna de notificacion-servicio |
 
 ---
 
@@ -594,15 +634,17 @@ docker logs cita-servicio
 
 El proyecto cuenta con:
 
-* 10 microservicios independientes
-* API Gateway funcional
-* Base de datos MariaDB en Docker
-* Comunicación REST entre microservicios
-* Configuración YAML
-* Pruebas unitarias con JUnit y Mockito
-* Documentación Swagger/OpenAPI
-* Docker Compose para despliegue local
-* Manejo de errores y validaciones de negocio
+* 10 microservicios independientes.
+* API Gateway funcional como entrada única por el puerto `8080`.
+* Base de datos MariaDB en Docker con separación `dev` y `test`.
+* Comunicación REST entre microservicios mediante WebClient.
+* Configuración YAML con perfiles `application-dev.yml` y `application-test.yml`.
+* Pruebas unitarias con JUnit, Mockito y DataFaker.
+* Pruebas de perfil para validar el uso de `veterinaria_db_test`.
+* Documentación Swagger/OpenAPI en todos los microservicios.
+* Evidencia de pruebas en Postman usando API Gateway.
+* Docker Compose para despliegue local.
+* Manejo de errores y validaciones de negocio.
 
 ---
 

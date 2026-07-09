@@ -8,6 +8,8 @@ import com.vidaysalud.veterinaria.inventarioservicio.exception.ReglaNegocioExcep
 import com.vidaysalud.veterinaria.inventarioservicio.model.MovimientoInventario;
 import com.vidaysalud.veterinaria.inventarioservicio.model.TipoMovimiento;
 import com.vidaysalud.veterinaria.inventarioservicio.repository.MovimientoInventarioRepository;
+import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,6 +35,13 @@ class InventarioServiceTest {
 
     @InjectMocks
     private InventarioService service;
+
+    private Faker faker;
+
+    @BeforeEach
+    void setUp() {
+        faker = new Faker();
+    }
 
     @Test
     void listarMovimientos_ok() {
@@ -99,7 +108,7 @@ class InventarioServiceTest {
     }
 
     @Test
-    void registrarEntrada_ok() {
+    void registrarEntrada_conDataFaker_debeRegistrarMovimientoCorrectamente() {
         MovimientoRequestDTO request = requestBase();
         request.setTipoMovimiento(TipoMovimiento.ENTRADA);
         request.setCantidad(10);
@@ -211,7 +220,13 @@ class InventarioServiceTest {
         request.setIdMedicamento(1);
         request.setTipoMovimiento(TipoMovimiento.ENTRADA);
         request.setCantidad(10);
-        request.setMotivo("Movimiento de prueba");
+        request.setMotivo(faker.options().option(
+                "Ingreso de stock por compra",
+                "Movimiento generado por ajuste interno",
+                "Reposicion de inventario",
+                "Salida por tratamiento veterinario",
+                "Correccion de stock"
+        ));
         return request;
     }
 

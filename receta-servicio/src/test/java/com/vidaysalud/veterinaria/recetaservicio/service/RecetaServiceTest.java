@@ -11,6 +11,8 @@ import com.vidaysalud.veterinaria.recetaservicio.exception.ReglaNegocioException
 import com.vidaysalud.veterinaria.recetaservicio.model.DetalleReceta;
 import com.vidaysalud.veterinaria.recetaservicio.model.Receta;
 import com.vidaysalud.veterinaria.recetaservicio.repository.RecetaRepository;
+import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +41,13 @@ class RecetaServiceTest {
 
     @InjectMocks
     private RecetaService service;
+
+    private Faker faker;
+
+    @BeforeEach
+    void setUp() {
+        faker = new Faker();
+    }
 
     @Test
     void listarRecetas_ok() {
@@ -94,7 +103,7 @@ class RecetaServiceTest {
     }
 
     @Test
-    void crearReceta_ok() {
+    void crearReceta_conDataFaker_debeGuardarCorrectamente() {
         RecetaRequestDTO request = requestBase();
 
         doNothing()
@@ -242,7 +251,12 @@ class RecetaServiceTest {
     private RecetaRequestDTO requestBase() {
         RecetaRequestDTO request = new RecetaRequestDTO();
         request.setIdConsulta(1);
-        request.setIndicacionesGenerales("Tomar medicamento con comida");
+        request.setIndicacionesGenerales(faker.options().option(
+                "Tomar medicamento con comida",
+                "Administrar tratamiento según indicación veterinaria",
+                "Mantener observación durante el tratamiento",
+                "Completar tratamiento indicado"
+        ));
         request.setDetalles(List.of(detalleRequest(1)));
         return request;
     }
@@ -250,7 +264,11 @@ class RecetaServiceTest {
     private RecetaRequestDTO requestConMedicamentoRepetido() {
         RecetaRequestDTO request = new RecetaRequestDTO();
         request.setIdConsulta(1);
-        request.setIndicacionesGenerales("Tratamiento con medicamentos repetidos");
+        request.setIndicacionesGenerales(faker.options().option(
+                "Tratamiento con medicamentos repetidos",
+                "Validación de medicamentos duplicados",
+                "Prueba de regla de negocio en receta"
+        ));
         request.setDetalles(List.of(
                 detalleRequest(1),
                 detalleRequest(1)
@@ -261,10 +279,25 @@ class RecetaServiceTest {
     private DetalleRecetaRequestDTO detalleRequest(Integer idMedicamento) {
         DetalleRecetaRequestDTO detalle = new DetalleRecetaRequestDTO();
         detalle.setIdMedicamento(idMedicamento);
-        detalle.setDosis("1 comprimido");
-        detalle.setFrecuencia("Cada 12 horas");
-        detalle.setDuracion("5 días");
-        detalle.setIndicaciones("Administrar después de comer");
+        detalle.setDosis(faker.options().option(
+                "1 comprimido",
+                "2 ml",
+                "5 gotas",
+                "1 dosis"
+        ));
+        detalle.setFrecuencia(faker.options().option(
+                "Cada 8 horas",
+                "Cada 12 horas",
+                "Una vez al dia",
+                "Cada 24 horas"
+        ));
+        detalle.setDuracion(faker.options().option(
+                "3 dias",
+                "5 dias",
+                "7 dias",
+                "10 dias"
+        ));
+        detalle.setIndicaciones(faker.lorem().sentence());
         return detalle;
     }
 

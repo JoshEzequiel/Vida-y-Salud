@@ -7,6 +7,8 @@ import com.vidaysalud.veterinaria.medicamentoservicio.exception.RecursoNoEncontr
 import com.vidaysalud.veterinaria.medicamentoservicio.exception.ReglaNegocioException;
 import com.vidaysalud.veterinaria.medicamentoservicio.model.Medicamento;
 import com.vidaysalud.veterinaria.medicamentoservicio.repository.MedicamentoRepository;
+import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +31,13 @@ class MedicamentoServiceTest {
 
     @InjectMocks
     private MedicamentoService service;
+
+    private Faker faker;
+
+    @BeforeEach
+    void setUp() {
+        faker = new Faker();
+    }
 
     @Test
     void listarMedicamentos_ok() {
@@ -79,7 +88,7 @@ class MedicamentoServiceTest {
     }
 
     @Test
-    void crearMedicamento_ok() {
+    void crearMedicamento_conDataFaker_debeGuardarCorrectamente() {
         MedicamentoRequestDTO request = requestBase();
 
         when(repository.findByNombreIgnoreCase(request.getNombre().trim()))
@@ -225,8 +234,14 @@ class MedicamentoServiceTest {
 
     private MedicamentoRequestDTO requestBase() {
         MedicamentoRequestDTO request = new MedicamentoRequestDTO();
-        request.setNombre("Amoxicilina");
-        request.setDescripcion("Antibiótico de uso veterinario");
+        request.setNombre(faker.options().option(
+                "Amoxicilina",
+                "Paracetamol veterinario",
+                "Antiinflamatorio veterinario",
+                "Antibiotico veterinario",
+                "Vitaminas para mascota"
+        ));
+        request.setDescripcion(faker.lorem().sentence());
         request.setStock(10);
         request.setPrecioUnitario(new BigDecimal("12990.00"));
         request.setActivo(true);

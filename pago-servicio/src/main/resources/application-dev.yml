@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: pago-servicio
+
+  datasource:
+    url: ${DB_URL:jdbc:mariadb://localhost:3306/veterinaria_db}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8089
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com:
+      vidaysalud:
+        veterinaria: INFO
+
+servicios:
+  cliente:
+    url: ${CLIENTE_URL:http://localhost:8081}
+  mascota:
+    url: ${MASCOTA_URL:http://localhost:8082}
+  veterinario:
+    url: ${VETERINARIO_URL:http://localhost:8083}
+  cita:
+    url: ${CITA_URL:http://localhost:8084}
+  consulta:
+    url: ${CONSULTA_URL:http://localhost:8085/api/v1/consultas}
+  medicamento:
+    url: ${MEDICAMENTO_URL:http://localhost:8086}
+  receta:
+    url: ${RECETA_URL:http://localhost:8087}
+  inventario:
+    url: ${INVENTARIO_URL:http://localhost:8088}
+  pago:
+    url: ${PAGO_URL:http://localhost:8089}
+  notificacion:
+    url: ${NOTIFICACION_URL:http://localhost:8090}

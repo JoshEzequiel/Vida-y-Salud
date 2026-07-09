@@ -10,6 +10,8 @@ import com.vidaysalud.veterinaria.pagoservicio.model.EstadoPago;
 import com.vidaysalud.veterinaria.pagoservicio.model.MetodoPago;
 import com.vidaysalud.veterinaria.pagoservicio.model.Pago;
 import com.vidaysalud.veterinaria.pagoservicio.repository.PagoRepository;
+import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,6 +38,13 @@ class PagoServiceTest {
 
     @InjectMocks
     private PagoService service;
+
+    private Faker faker;
+
+    @BeforeEach
+    void setUp() {
+        faker = new Faker();
+    }
 
     @Test
     void listarPagos_ok() {
@@ -86,7 +95,7 @@ class PagoServiceTest {
     }
 
     @Test
-    void crearPago_ok() {
+    void crearPago_conDataFaker_debeGuardarCorrectamente() {
         PagoRequestDTO request = requestBase();
 
         doNothing()
@@ -272,7 +281,13 @@ class PagoServiceTest {
         request.setMonto(new BigDecimal("35000.00"));
         request.setMetodoPago(MetodoPago.EFECTIVO);
         request.setEstado(null);
-        request.setReferencia("Pago de prueba");
+        request.setReferencia(faker.options().option(
+                "Pago generado por prueba",
+                "Pago de consulta veterinaria",
+                "Referencia de pago automatizada",
+                "Pago registrado en test",
+                "Comprobante generado por DataFaker"
+        ));
         return request;
     }
 

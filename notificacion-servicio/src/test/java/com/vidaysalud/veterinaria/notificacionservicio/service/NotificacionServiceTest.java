@@ -9,6 +9,8 @@ import com.vidaysalud.veterinaria.notificacionservicio.model.EstadoNotificacion;
 import com.vidaysalud.veterinaria.notificacionservicio.model.Notificacion;
 import com.vidaysalud.veterinaria.notificacionservicio.model.TipoNotificacion;
 import com.vidaysalud.veterinaria.notificacionservicio.repository.NotificacionRepository;
+import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +36,13 @@ class NotificacionServiceTest {
 
     @InjectMocks
     private NotificacionService service;
+
+    private Faker faker;
+
+    @BeforeEach
+    void setUp() {
+        faker = new Faker();
+    }
 
     @Test
     void listarNotificaciones_ok() {
@@ -100,7 +109,7 @@ class NotificacionServiceTest {
     }
 
     @Test
-    void crearNotificacion_ok() {
+    void crearNotificacion_conDataFaker_debeGuardarCorrectamente() {
         NotificacionRequestDTO request = requestBase();
 
         doNothing()
@@ -216,9 +225,21 @@ class NotificacionServiceTest {
         NotificacionRequestDTO request = new NotificacionRequestDTO();
         request.setIdCliente(1);
         request.setTipo(TipoNotificacion.EMAIL);
-        request.setDestinatario("cliente@email.com");
-        request.setAsunto("Recordatorio de cita");
-        request.setMensaje("Tiene una cita veterinaria agendada.");
+        request.setDestinatario(faker.internet().emailAddress());
+        request.setAsunto(faker.options().option(
+                "Recordatorio de cita",
+                "Confirmacion de atencion veterinaria",
+                "Aviso de control pendiente",
+                "Notificacion de consulta",
+                "Recordatorio de tratamiento"
+        ));
+        request.setMensaje(faker.options().option(
+                "Tiene una cita veterinaria agendada.",
+                "Recuerde asistir al control de su mascota.",
+                "Su mascota tiene una atencion pendiente.",
+                "Se informa una notificacion importante de la veterinaria.",
+                "Favor revisar los detalles de su proxima atencion."
+        ));
         return request;
     }
 

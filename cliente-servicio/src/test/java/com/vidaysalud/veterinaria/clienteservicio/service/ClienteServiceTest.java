@@ -38,7 +38,7 @@ class ClienteServiceTest {
     }
 
     @Test
-    void crearCliente_ok() {
+    void crearCliente_conDataFaker_debeGuardarCorrectamente() {
         // Given
         ClienteRequestDTO request = new ClienteRequestDTO();
         request.setRut("12345678-9");

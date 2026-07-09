@@ -6,11 +6,13 @@ import com.vidaysalud.veterinaria.veterinarioservicio.exception.DatoDuplicadoExc
 import com.vidaysalud.veterinaria.veterinarioservicio.exception.RecursoNoEncontradoException;
 import com.vidaysalud.veterinaria.veterinarioservicio.model.Veterinario;
 import com.vidaysalud.veterinaria.veterinarioservicio.repository.VeterinarioRepository;
+import net.datafaker.Faker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,8 @@ class VeterinarioServiceTest {
 
     @InjectMocks
     private VeterinarioService service;
+
+    private final Faker faker = new Faker();
 
     @Test
     void listarVeterinarios_ok() {
@@ -116,6 +120,49 @@ class VeterinarioServiceTest {
         assertTrue(resultado.getActivo());
 
         verify(repository).findByEmail(request.getEmail());
+        verify(repository).save(any(Veterinario.class));
+    }
+
+    @Test
+    void crearVeterinario_conDataFaker_debeGuardarCorrectamente() {
+        VeterinarioRequestDTO request = new VeterinarioRequestDTO();
+
+        String nombre = faker.name().fullName();
+        String especialidad = faker.options().option(
+                "Cirugia",
+                "Dermatologia",
+                "Medicina General",
+                "Odontologia"
+        );
+        String telefono = "+569" + faker.number().digits(8);
+        String email = faker.internet().emailAddress().toLowerCase();
+
+        request.setNombre(nombre);
+        request.setEspecialidad(especialidad);
+        request.setTelefono(telefono);
+        request.setEmail(email);
+        request.setActivo(true);
+
+        when(repository.findByEmail(email))
+                .thenReturn(Optional.empty());
+
+        when(repository.save(any(Veterinario.class)))
+                .thenAnswer(invocation -> {
+                    Veterinario veterinario = invocation.getArgument(0);
+                    veterinario.setIdVeterinario(10);
+                    return veterinario;
+                });
+
+        VeterinarioResponseDTO resultado = service.crear(request);
+
+        assertNotNull(resultado);
+        assertEquals(10, resultado.getIdVeterinario());
+        assertEquals(nombre.trim(), resultado.getNombre());
+        assertEquals(especialidad.trim(), resultado.getEspecialidad());
+        assertEquals(email, resultado.getEmail());
+        assertTrue(resultado.getActivo());
+
+        verify(repository).findByEmail(email);
         verify(repository).save(any(Veterinario.class));
     }
 

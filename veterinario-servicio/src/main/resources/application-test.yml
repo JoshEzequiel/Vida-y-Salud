@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: veterinario-servicio-test
+
+  datasource:
+    url: jdbc:mariadb://localhost:3307/veterinaria_db_test
+    username: root
+    password: root123
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

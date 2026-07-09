@@ -10,6 +10,8 @@ import com.vidaysalud.veterinaria.consultaservicio.exception.RecursoNoEncontrado
 import com.vidaysalud.veterinaria.consultaservicio.exception.ReglaNegocioException;
 import com.vidaysalud.veterinaria.consultaservicio.model.Consulta;
 import com.vidaysalud.veterinaria.consultaservicio.repository.ConsultaRepository;
+import net.datafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,6 +44,13 @@ class ConsultaServiceTest {
 
     @InjectMocks
     private ConsultaService service;
+
+    private Faker faker;
+
+    @BeforeEach
+    void setUp() {
+        faker = new Faker();
+    }
 
     @Test
     void listarConsultas_ok() {
@@ -109,7 +118,7 @@ class ConsultaServiceTest {
     }
 
     @Test
-    void crearConsulta_ok() {
+    void crearConsulta_conDataFaker_debeGuardarCorrectamente() {
         ConsultaRequestDTO request = requestBase();
 
         when(repository.findByIdCita(request.getIdCita()))
@@ -231,9 +240,19 @@ class ConsultaServiceTest {
         request.setIdVeterinario(1);
         request.setIdCita(1);
         request.setFechaConsulta(LocalDateTime.now());
-        request.setMotivo("Control general");
-        request.setDiagnostico("Paciente en buen estado");
-        request.setObservaciones("Sin observaciones");
+        request.setMotivo(faker.options().option(
+                "Control general",
+                "Consulta por malestar",
+                "Revision de rutina",
+                "Control post tratamiento"
+        ));
+        request.setDiagnostico(faker.options().option(
+                "Paciente estable",
+                "Paciente en observacion",
+                "Paciente con evolucion favorable",
+                "Paciente requiere seguimiento"
+        ));
+        request.setObservaciones(faker.lorem().sentence());
         request.setPesoActual(new BigDecimal("8.50"));
         request.setTemperatura(new BigDecimal("38.5"));
         request.setCostoConsulta(new BigDecimal("35000.00"));
