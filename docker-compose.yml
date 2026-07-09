@@ -85,6 +85,8 @@ services:
       DB_USER: root
       DB_PASSWORD: root123
       CITA_URL: http://cita-servicio:8084/api/v1/citas
+      MASCOTA_URL: http://mascota-servicio:8082/api/v1/mascotas
+      VETERINARIO_URL: http://veterinario-servicio:8083/api/v1/veterinarios
     ports:
       - "8085:8085"
   medicamento-servicio:
@@ -158,6 +160,7 @@ services:
       DB_URL: jdbc:mariadb://mariadb:3306/veterinaria_db
       DB_USER: root
       DB_PASSWORD: root123
+      CLIENTE_URL: http://cliente-servicio:8081/api/v1/clientes
     ports:
       - "8090:8090"
   api-gateway:
